@@ -21,10 +21,13 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -122,4 +125,8 @@ func removeFromFile(mutex *sync.Mutex, path string, toRemove string) error {
 
 	mutex.Unlock()
 	return nil
+}
+
+func log(cmd *exec.Cmd) {
+	glog.Infof("calling %s", strings.Join(cmd.Args, " "))
 }
