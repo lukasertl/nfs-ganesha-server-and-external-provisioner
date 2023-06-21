@@ -48,6 +48,10 @@ func (p *nfsProvisioner) Delete(volume *v1.PersistentVolume) error {
 	}
 
 	if p.vgName != "" {
+		err = p.systemdReload()
+		if err != nil {
+			return fmt.Errorf("error reloading systemd: %v", err)
+		}
 		err = p.deleteLvmVolume(volume)
 		if err != nil {
 			return fmt.Errorf("error deleting volume's lv: %v", err)
@@ -74,6 +78,17 @@ func (p *nfsProvisioner) provisioned(volume *v1.PersistentVolume) (bool, error) 
 	}
 
 	return provisionerID == string(p.identity), nil
+}
+
+func (p *nfsProvisioner) systemdReload() error {
+	cmd := exec.Command("systemctl", "daemon-reload")
+	log(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("systemctl daemon-reload failed with error: %v, output: %s", err, out)
+	}
+
+	return nil
 }
 
 func (p *nfsProvisioner) deleteLvmVolume(volume *v1.PersistentVolume) error {
